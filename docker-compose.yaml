@@ -1,0 +1,25 @@
+version: '3'
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - /app/node_modules
+      - .:/app
+    tty: true              # 💡 關鍵 1：保持終端機開啟，防止 web-1 自動退出
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /app/node_modules
+      - .:/app
+    environment:
+      - CI=true            # 💡 關鍵 2：讓測試跑一次就正常退出，不要進入卡住的監聽模式
+    command: ["npm", "run", "test"]
+
+    
