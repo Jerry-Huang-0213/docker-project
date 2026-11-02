@@ -1,0 +1,20 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  travis-compatible-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. 這裡完全是您原本的 before_install 指令
+      - name: Before Install (Build Docker)
+        run: docker build -t jason/docker -f Dockerfile.dev .
+
+      # 2. 這裡完全是您原本的 script 指令（修正了 -e CI=true 的小語法）
+      - name: Script (Run Tests)
+        run: docker run -e CI=true jason/docker npm run test
