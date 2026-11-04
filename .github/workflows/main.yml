@@ -19,9 +19,9 @@ jobs:
       - name: Script (Run Tests)
         run: docker run -e CI=true jason/docker npm run test
 
-      # 3. 產生部署包（加上排除自己 deploy.tar.gz 的設定）
+       # 3. 產生部署包：把紙箱放在 Linux 的臨時資料夾 (/tmp)，這樣當前目錄 (.) 就不會多出任何變動的檔案！
       - name: Generate Deployment Package
-        run: tar --exclude='.git' --exclude='node_modules' --exclude='Dockerfile.dev' --exclude='deploy.tar.gz' -czf deploy.tar.gz .
+        run: tar --exclude='.git' --exclude='node_modules' --exclude='Dockerfile.dev' -czf /tmp/deploy.tar.gz .
 
       # 4. 部署到 AWS Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
@@ -33,4 +33,5 @@ jobs:
           environment_name: "Docker-test-env"
           region: "ap-southeast-2"
           version_label: "deploy-${{ github.sha }}"
-          deployment_package: "deploy.tar.gz"
+          # 告訴部署工具，去臨時資料夾拿打包好的紙箱
+          deployment_package: "/tmp/deploy.tar.gz"
