@@ -19,12 +19,13 @@ jobs:
       - name: Script (Run Tests)
         run: docker run -e CI=true jason/docker npm run test
 
-      - name: deploy
-        provider: elasticbeanstalk 
-        region: "ap-southeast-2"
-        app: "docker"
-        env: "Docker-test-env"     
-        bucket_name: "elasticbeanstalk-ap-southeast-2-711553773078"
-        bucket_path: "docker"
-        on:
-          branch: master
+         - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: "docker-test"
+          environment_name: "Docker-test-env"
+          region: "ap-southeast-2" # 請確認您的 AWS 區域編號是否為雪梨
+          version_label: "deploy-${{ github.sha }}"
+          deployment_package: "Dockerfile" # 或者是您要上傳的 Dockerrun.aws.json
