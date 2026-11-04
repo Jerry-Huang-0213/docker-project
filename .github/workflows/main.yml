@@ -19,25 +19,31 @@ jobs:
       - name: Script (Run Tests)
         run: docker run -e CI=true jason/docker npm run test
 
-      # 3. 關鍵優化：在 GitHub Actions 現場完成生產環境的打包！
-      # 這樣可以產生完全獨立的 build 資料夾，不需要把整大包原始碼送去 AWS 現場編譯
+      # 3. 在 GitHub Actions 現場完成生產環境的打包（已修正 ENV 錯誤）
       - name: Build Production Project
         run: |
           npm install
           DISABLE_ESLINT_PLUGIN=true npm run build
 
-      # 4. 只把「Dockerfile」和剛剛打包好的「build 資料夾」壓縮起來
-      # 拒絕把 node_modules、src、public 等累贅原始碼送去 AWS
-            # 3. 確保你最新修改的 Dockerfile 和專案原始碼被精準打包
+      # 4. 關鍵優化：建立乾淨的部署資料夾，絕對不會打包到 node_modules
       - name: Generate Deployment Package
         run: |
-          # 強制檢查 Dockerfile 是否存在，預防路徑或檔名錯誤
-          ls -la Dockerfile
-          # 打包當前目錄，並徹底排除掉不需要的垃圾檔案
-          zip -r deploy.zip . -x "*.git*" "node_modules/*" "Dockerfile.dev" "docker-compose.yaml" "deploy.zip"
+          # 建立一個暫時的乾淨資料夾
+          mkdir deploy_dir
+          
+          # 只把生產環境絕對需要的「Dockerfile」和「build 資料夾」複製進去
+          cp Dockerfile deploy_dir/
+          cp -r build deploy_dir/
+          
+          # 切換進去該資料夾，並壓縮成 deploy.zip 存放在根目錄
+          cd deploy_dir
+          zip -r ../deploy.zip .
+          
+          # 預覽壓縮包內容，確保檔案極小且結構正確
+          cd ..
+          ls -lh deploy.zip
 
-
-      # 5. 部署到 AWS Elastic Beanstalk
+      # 5. 部署到 AWS Elastic Beanstalk（上傳速度將大幅提升）
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
         with:
