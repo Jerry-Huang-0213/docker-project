@@ -19,9 +19,9 @@ jobs:
       - name: Script (Run Tests)
         run: docker run -e CI=true jason/docker npm run test
 
-      # 3. 產生部署包（直接在根目錄打包，並命名為 deploy.tar.gz）
+      # 3. 產生部署包（加上排除自己 deploy.tar.gz 的設定）
       - name: Generate Deployment Package
-        run: tar --exclude='.git' --exclude='node_modules' --exclude='Dockerfile.dev' -czf deploy.tar.gz .
+        run: tar --exclude='.git' --exclude='node_modules' --exclude='Dockerfile.dev' --exclude='deploy.tar.gz' -czf deploy.tar.gz .
 
       # 4. 部署到 AWS Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
