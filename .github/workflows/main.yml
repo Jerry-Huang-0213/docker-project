@@ -11,22 +11,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 1. 建立測試用的 Docker 映像檔 (加入 working-directory)
+      # 1. 建立測試用的 Docker 映像檔（直接在根目錄跑）
       - name: Before Install (Build Docker)
-        working-directory: ./frontend
         run: docker build -t jason/docker -f Dockerfile.dev .
 
-      # 2. 執行測試 (加入 working-directory)
+      # 2. 執行測試
       - name: Script (Run Tests)
-        working-directory: ./frontend
         run: docker run -e CI=true jason/docker npm run test
 
-      # 3. 在 frontend 資料夾內打包程式，並將壓縮檔直接產在根目錄
+      # 3. 產生部署包（直接在根目錄打包，並命名為 deploy.tar.gz）
       - name: Generate Deployment Package
-        working-directory: ./frontend
-        run: tar --exclude='.git' --exclude='node_modules' --exclude='Dockerfile.dev' -czf ../deploy.tar.gz .
+        run: tar --exclude='.git' --exclude='node_modules' --exclude='Dockerfile.dev' -czf deploy.tar.gz .
 
-      # 4. 部署到 AWS Elastic Beanstalk (這時根目錄就有 deploy.tar.gz 了)
+      # 4. 部署到 AWS Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
         with:
