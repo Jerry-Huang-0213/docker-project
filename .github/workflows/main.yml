@@ -24,7 +24,7 @@ jobs:
       - name: Build Production Project
         run: |
           npm install
-          ENV DISABLE_ESLINT_PLUGIN=true npm run build
+          DISABLE_ESLINT_PLUGIN=true npm run build
 
       # 4. 只把「Dockerfile」和剛剛打包好的「build 資料夾」壓縮起來
       # 拒絕把 node_modules、src、public 等累贅原始碼送去 AWS
