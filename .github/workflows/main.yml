@@ -19,13 +19,25 @@ jobs:
       - name: Script (Run Tests)
         run: docker run -e CI=true jason/docker npm run test
 
-      # 3. 換回最傳統、好溝通的 zip 指令（會自動把包包裡的 node_modules 排除掉）
-            # 3. 產生部署包：除了原本排除的檔案，多加上排除 "docker-compose.yaml"
+      # 3. 關鍵優化：在 GitHub Actions 現場完成生產環境的打包！
+      # 這樣可以產生完全獨立的 build 資料夾，不需要把整大包原始碼送去 AWS 現場編譯
+      - name: Build Production Project
+        run: |
+          npm install
+          ENV DISABLE_ESLINT_PLUGIN=true npm run build
+
+      # 4. 只把「Dockerfile」和剛剛打包好的「build 資料夾」壓縮起來
+      # 拒絕把 node_modules、src、public 等累贅原始碼送去 AWS
+            # 3. 確保你最新修改的 Dockerfile 和專案原始碼被精準打包
       - name: Generate Deployment Package
-        run: zip -r deploy.zip . -x "*.git*" "node_modules/*" "Dockerfile.dev" "docker-compose.yaml"
+        run: |
+          # 強制檢查 Dockerfile 是否存在，預防路徑或檔名錯誤
+          ls -la Dockerfile
+          # 打包當前目錄，並徹底排除掉不需要的垃圾檔案
+          zip -r deploy.zip . -x "*.git*" "node_modules/*" "Dockerfile.dev" "docker-compose.yaml" "deploy.zip"
 
 
-      # 4. 部署到 AWS Elastic Beanstalk
+      # 5. 部署到 AWS Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
         with:
@@ -35,6 +47,4 @@ jobs:
           environment_name: "Docker-test-env"
           region: "ap-southeast-2"
           version_label: "deploy-${{ github.sha }}"
-          # 指回我們產出的 deploy.zip
           deployment_package: "deploy.zip"
-
