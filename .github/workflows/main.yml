@@ -18,3 +18,13 @@ jobs:
       # 2. 這裡完全是您原本的 script 指令（修正了 -e CI=true 的小語法）
       - name: Script (Run Tests)
         run: docker run -e CI=true jason/docker npm run test
+
+      - name: deploy
+        provider: elasticbeanstalk 
+        region: "ap-southeast-2"
+        app: "docker"
+        env: "Docker-test-env"     
+        bucket_name: "elasticbeanstalk-ap-southeast-2-711553773078"
+        bucket_path: "docker"
+        on:
+          branch: master
