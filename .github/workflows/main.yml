@@ -11,14 +11,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 1. 這裡完全是您原本的 before_install 指令
+      # 1. 建立測試用的 Docker 映像檔 (加入 working-directory)
       - name: Before Install (Build Docker)
+        working-directory: ./frontend
         run: docker build -t jason/docker -f Dockerfile.dev .
 
-      # 2. 這裡完全是您原本的 script 指令（修正了 -e CI=true 的小語法）
+      # 2. 執行測試 (加入 working-directory)
       - name: Script (Run Tests)
+        working-directory: ./frontend
         run: docker run -e CI=true jason/docker npm run test
 
+      # 3. 在 frontend 資料夾內打包程式，並將壓縮檔直接產在根目錄
+      - name: Generate Deployment Package
+        working-directory: ./frontend
+        run: tar --exclude='.git' --exclude='node_modules' --exclude='Dockerfile.dev' -czf ../deploy.tar.gz .
+
+      # 4. 部署到 AWS Elastic Beanstalk (這時根目錄就有 deploy.tar.gz 了)
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
         with:
@@ -26,6 +34,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: "docker-test"
           environment_name: "Docker-test-env"
-          region: "ap-southeast-2" # 請確認您的 AWS 區域編號是否為雪梨
+          region: "ap-southeast-2"
           version_label: "deploy-${{ github.sha }}"
           deployment_package: "deploy.tar.gz"
