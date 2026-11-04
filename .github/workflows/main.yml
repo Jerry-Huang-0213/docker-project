@@ -36,6 +36,7 @@ jobs:
           # 打包當前目錄，並徹底排除掉不需要的垃圾檔案
           zip -r deploy.zip . -x "*.git*" "node_modules/*" "Dockerfile.dev" "docker-compose.yaml" "deploy.zip"
 
+          
 
       # 5. 部署到 AWS Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
