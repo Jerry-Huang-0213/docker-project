@@ -20,8 +20,10 @@ jobs:
         run: docker run -e CI=true jason/docker npm run test
 
       # 3. 換回最傳統、好溝通的 zip 指令（會自動把包包裡的 node_modules 排除掉）
+            # 3. 產生部署包：除了原本排除的檔案，多加上排除 "docker-compose.yaml"
       - name: Generate Deployment Package
-        run: zip -r deploy.zip . -x "*.git*" "node_modules/*" "Dockerfile.dev"
+        run: zip -r deploy.zip . -x "*.git*" "node_modules/*" "Dockerfile.dev" "docker-compose.yaml"
+
 
       # 4. 部署到 AWS Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
