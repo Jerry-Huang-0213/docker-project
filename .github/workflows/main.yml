@@ -28,4 +28,4 @@ jobs:
           environment_name: "Docker-test-env"
           region: "ap-southeast-2" # 請確認您的 AWS 區域編號是否為雪梨
           version_label: "deploy-${{ github.sha }}"
-          deployment_package: "deploy.zip" # 或者是您要上傳的 Dockerrun.aws.json
+          deployment_package: "deploy.tar.gz"
