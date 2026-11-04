@@ -19,14 +19,9 @@ jobs:
       - name: Script (Run Tests)
         run: docker run -e CI=true jason/docker npm run test
 
-      # 3. 拋棄笨笨的 tar 指令！改用 GitHub 官方最頂級、絕不出錯的打包工具
-      # 這工具會自動把排除完的檔案「平鋪」壓縮，絕對不會產生多餘的夾層目錄
+      # 3. 換回最傳統、好溝通的 zip 指令（會自動把包包裡的 node_modules 排除掉）
       - name: Generate Deployment Package
-        uses: theskumar/clean-archive-action@v0.1.2
-        with:
-          filename: 'deploy.zip'
-          # 要排除的檔案直接寫在這裡，清晰又有大腦
-          exclude: '.git, node_modules, Dockerfile.dev'
+        run: zip -r deploy.zip . -x "*.git*" "node_modules/*" "Dockerfile.dev"
 
       # 4. 部署到 AWS Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
@@ -38,5 +33,6 @@ jobs:
           environment_name: "Docker-test-env"
           region: "ap-southeast-2"
           version_label: "deploy-${{ github.sha }}"
-          # 這裡指回打包出來的 deploy.zip 
+          # 指回我們產出的 deploy.zip
           deployment_package: "deploy.zip"
+
