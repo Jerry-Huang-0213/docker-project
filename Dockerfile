@@ -1,21 +1,12 @@
-# 1. 將 as 改成全大寫 AS（消除語法警告）
-FROM node:16-alpine AS builder
+# 方案 B 專用：AWS 現場不需要安裝 Node，直接用 Nginx
+FROM nginx:alpine
 
-# 2. 移除單引號，直接寫 /app 即可（更符合 Docker 規範）
-WORKDIR /app
-
-COPY package.json .
-RUN npm install
-COPY . .
-
-# 3. 關鍵：加入這行環境變數，防止上一次發生的 ESLint 報錯導致 Build 失敗
-ENV DISABLE_ESLINT_PLUGIN=true
-RUN npm run build
-
-FROM nginx
-COPY --from=builder /app/build /usr/share/nginx/html
+# 把 GitHub 現場編譯好的成品直接複製進去
+COPY build /usr/share/nginx/html
 
 
 
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 
 
